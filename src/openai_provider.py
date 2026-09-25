@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from openai import OpenAI, OpenAIError
+
 from src.models import LLMResponse
-from src.provider import BaseProvider
+from src.provider import BaseProvider, ProviderError
 
 
 class OpenAIProvider(BaseProvider):
@@ -16,4 +18,17 @@ class OpenAIProvider(BaseProvider):
     def generate(self, prompt: str) -> LLMResponse:
         """Generate a response using the OpenAI SDK."""
         # TODO: implement this method.
-        raise NotImplementedError("Implement OpenAIProvider.generate().")
+        try:
+            client = OpenAI(api_key=self.api_key)
+            completion = client.chat.completions.create(
+                model=self.model,
+                messages=[{"role": "user", "content": prompt}],
+            )
+        except OpenAIError as exc:
+            raise ProviderError(f"OpenAI request failed ({type(exc).__name__}).") from exc
+
+        text = completion.choices[0].message.content
+        if not text:
+            raise ProviderError("OpenAI returned an empty response.")
+
+        return LLMResponse(text=text, provider="openai", model=self.model)

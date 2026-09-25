@@ -2,6 +2,12 @@
 
 from __future__ import annotations
 
+import os
+
+
+class ConfigurationError(ValueError):
+    """Raised when a required setting is missing or a setting is invalid."""
+
 
 def load_config() -> dict:
     """
@@ -13,4 +19,8 @@ def load_config() -> dict:
     - OPENAI_MODEL
     """
     # TODO: implement this function.
-    raise NotImplementedError("Implement load_config().")
+    return {
+        "LLM_PROVIDER": os.getenv("LLM_PROVIDER", "mock"),
+        "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY", ""),
+        "OPENAI_MODEL": os.getenv("OPENAI_MODEL", ""),
+    }
